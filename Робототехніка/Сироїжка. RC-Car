@@ -1,0 +1,57 @@
+#include <AccelStepper.h>
+#include <SoftwareSerial.h>
+
+// Піни для крокового двигуна
+#define motorPin1 8
+#define motorPin2 9
+#define motorPin3 10
+#define motorPin4 11
+
+// Ініціалізація об'єкта крокового двигуна
+AccelStepper stepper(1, motorPin1, motorPin3, motorPin2, motorPin4);
+
+// Піни для датчика руху та Bluetooth модуля
+#define motionSensorPin 2
+#define rxPin 3
+#define txPin 4
+
+SoftwareSerial bluetooth(rxPin, txPin);
+
+void setup() {
+  // Ініціалізація датчика руху та Bluetooth з'єднання
+  pinMode(motionSensorPin, INPUT);
+  bluetooth.begin(9600);
+  
+  // Встановлення швидкості для крокового двигуна
+  stepper.setMaxSpeed(1000);
+  stepper.setSpeed(500);
+}
+
+void loop() {
+  // Отримання стану датчика руху
+  int motionSensorValue = digitalRead(motionSensorPin);
+
+  if (motionSensorValue == HIGH) {
+    // Якщо виявлено рух, отримати команду від Bluetooth
+    if (bluetooth.available() > 0) {
+      char command = bluetooth.read();
+
+      // Керування рухом Rc Car
+      if (command == 'W') {
+        stepper.setSpeed(500);
+        stepper.step(100);
+      } else if (command == 'S') {
+        stepper.setSpeed(-500);
+        stepper.step(100);
+      } else if (command == 'A') {
+        // Керування ліворуч
+      } else if (command == 'D') {
+        // Керування праворуч
+      } else if (command == 'Space') {
+        // Зупинка руху
+        stepper.setSpeed(0);
+        stepper.step(1);
+      }
+    }
+  }
+}
